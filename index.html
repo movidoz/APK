@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download APK</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; text-align: center; padding: 50px;">
+
+  <h1>📱 Download Our APK</h1>
+
+  <!-- Hidden Download Link -->
+  <a href="https://movidoz.github.io/APK/movidoz-fix-fullscreen.apk" id="sourceLink" style="display: none;"></a>
+
+  <!-- Download Button -->
+  <button id="downloadBtn" style="background-color: #28a745; border-radius: 8px; border: none; color: white; cursor: pointer; font-size: 18px; padding: 12px 24px;">
+    ⬇ Download APK
+  </button>
+
+  <p id="clickCount" style="color: #555555; font-size: 16px; margin-top: 10px;">
+    📥 Downloads: loading...
+  </p>
+
+  <!-- Load Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    // ✅ Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyA4-6MulAtaFWpCIV-diuO1p8qUWPHgzek",
+      authDomain: "drach-counter.firebaseapp.com",
+      databaseURL: "https://drach-counter-default-rtdb.firebaseio.com",
+      projectId: "drach-counter",
+      storageBucket: "drach-counter.appspot.com",
+      messagingSenderId: "229264445934",
+      appId: "1:229264445934:web:3b87018f52e7bae436beff",
+      measurementId: "G-KDKR068E32"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ✅ Auto-generate unique counter path per post
+    const pageKey = window.location.pathname.replace(/\W+/g, "_"); // Make URL path safe for Firebase
+    const counterPath = `counters${pageKey}`;
+    const countRef = db.ref(counterPath);
+
+    // Display current count
+    countRef.on('value', (snapshot) => {
+      const count = snapshot.val() || 0;
+      document.getElementById('clickCount').textContent = `📥 Downloads: ${count}`;
+    });
+
+    // Increment count on click
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      const downloadUrl = document.getElementById('sourceLink').href;
+
+      // Disable button to prevent double click
+      this.disabled = true;
+      this.textContent = "Processing...";
+
+      countRef.transaction(current => {
+        return (current || 0) + 1;
+      }, function (error, committed, snapshot) {
+        if (error) {
+          console.error('Transaction failed:', error);
+          alert("❌ Failed to count your download. Please try again.");
+          document.getElementById('downloadBtn').disabled = false;
+          document.getElementById('downloadBtn').textContent = "⬇ Download APK";
+        } else if (committed) {
+          console.log('Counter incremented:', snapshot.val());
+          window.location.href = downloadUrl;
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
